@@ -27,7 +27,7 @@ def getIdxSplit(hash_class, perc_train):
 				train_idx.extend( hash_class[cl][vals[i]] ) 
 			else:
 				test_idx.extend( hash_class[cl][vals[i]] ) 
-	print "============"
+	#print "============"
 	return train_idx, test_idx
 		
 	
@@ -39,7 +39,7 @@ if not os.path.exists(path_out):
 	os.makedirs(path_out)
 
 ds_label = np.load( path_in+"/ds_label.npy" )
-vhsr = np.load( path_in+"/vhsr_data.npy" )
+#vhsr = np.load( path_in+"/vhsr_data.npy" )
 timeSeries = np.load( path_in+"/ts_data.npy" )
 
 perc_train = 0.3
@@ -64,14 +64,14 @@ print hash_class.keys()
 if not os.path.exists(path_out+"/TimeSeries"):
 	os.makedirs(path_out+"/TimeSeries")
 
-if not os.path.exists(path_out+"/VHSR"):
-	os.makedirs(path_out+"/VHSR/")
+#if not os.path.exists(path_out+"/VHSR"):
+#	os.makedirs(path_out+"/VHSR/")
 	
 if not os.path.exists(path_out+"/ground_truth"):
 	os.makedirs(path_out+"/ground_truth/")
 	
 	
-for split_id in range(5):
+for split_id in range(10):
 	train_idx, test_idx = getIdxSplit(hash_class, perc_train)
 	
 	
@@ -84,11 +84,11 @@ for split_id in range(5):
 
 
 	#write vhsr splits
-	outFileTrain = path_out+"/VHSR/train_x"+str(split_id)+"_"+str(int(perc_train*100))+".npy"
-	writeSplit(train_idx, vhsr, outFileTrain )
+#	outFileTrain = path_out+"/VHSR/train_x"+str(split_id)+"_"+str(int(perc_train*100))+".npy"
+#	writeSplit(train_idx, vhsr, outFileTrain )
 
-	outFileTest = path_out+"/VHSR/test_x"+str(split_id)+"_"+str(int(perc_train*100))+".npy"
-	writeSplit(test_idx, vhsr, outFileTest )
+#	outFileTest = path_out+"/VHSR/test_x"+str(split_id)+"_"+str(int(perc_train*100))+".npy"
+#	writeSplit(test_idx, vhsr, outFileTest )
 	
 	#write ground_truth
 	outFileTrain = path_out+"/ground_truth/train_y"+str(split_id)+"_"+str(int(perc_train*100))+".npy"

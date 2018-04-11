@@ -16,6 +16,15 @@ from sklearn.metrics import confusion_matrix
 import time
 
 
+
+def getBatch(X, Y, i, batch_size):
+    start_id = i*batch_size
+    end_id = min( (i+1) * batch_size, X.shape[0])
+    batch_x = X[start_id:end_id]
+    batch_y = Y[start_id:end_id]
+    return batch_x, batch_y
+
+
 def checkTest(ts_data, batchsz, label_test):
 	tot_pred = []
 #	gt_test = []
@@ -31,7 +40,6 @@ def checkTest(ts_data, batchsz, label_test):
 		pred_temp = sess.run(testPrediction,feed_dict={x_rnn:batch_rnn_x})
 		
 		del batch_rnn_x
-		del batch_cnn_x
 		del batch_y
 		
 		for el in pred_temp:
@@ -49,7 +57,7 @@ def checkTest(ts_data, batchsz, label_test):
 	print "TEST F-Measure: %f" % f1_score(label_test, tot_pred, average='weighted')
 	print f1_score(label_test, tot_pred, average=None)
 	print "TEST Accuracy: %f" % accuracy_score(label_test, tot_pred)
-	print confusion_matrix(label_test, tot_pred)
+	#print confusion_matrix(label_test, tot_pred)
 	print "==========================================="
 	sys.stdout.flush()	
 	return accuracy_score(label_test, tot_pred)
@@ -64,10 +72,10 @@ def getPrediction(x_rnn, nunits, nlayer, nclasses, model_type):
 	n_timestamps = ts_shape[1].value
 	dim_bands = ts_shape[2].value
 	
-	if type_net == "CNN1D": 	
+	if model_type == "CNN1D": 	
 		x_cnn1D = tf.reshape(x_rnn, [-1, 1, n_timestamps, dim_bands] )
 		vec_feat, _ = CNN1D(x_cnn1D, nunits)
-	elif type_net == "RNN":
+	elif model_type == "RNN":
 		vec_feat = Rnn(x_rnn, nunits, nlayer, n_timestamps)
 	
 	#weights = tf.Variable(tf.random_normal([nunits, nclasses], stddev=0.35), name="weights")
@@ -214,7 +222,7 @@ if __name__ == "__main__":
 	
 	x_rnn = tf.placeholder("float",[None,n_timestamps,n_dims],name="x_rnn")
 	y = tf.placeholder("float",[None,nclasses],name="y")
-	learning_rate = tf.placeholder(tf.float32, shape=[], name="learning_rate")
+	l_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
 	
 	sess = tf.InteractiveSession()
 	
@@ -222,11 +230,11 @@ if __name__ == "__main__":
 	
 	testPrediction = tf.argmax(pred, 1, name="prediction")
 
-	error = tf.reduce_mean( tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=pred)  )
+	loss = tf.reduce_mean( tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=pred)  )
 
 	optimizer = None
 	
-	optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(error)
+	optimizer = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(loss)
 
 	
 	correct = tf.equal(tf.argmax(pred,1),tf.argmax(y,1))
@@ -240,7 +248,9 @@ if __name__ == "__main__":
 	classes = label_train - 1
 	rnn_data_train = getRNNFormat(ts_train, n_timestamps)
 	train_y = getLabelFormat(classes)
-
+	
+	rnn_data_test = getRNNFormat(ts_test, n_timestamps)
+	
 	classes_test = label_test - 1
 	test_y = getLabelFormat(classes_test)
 
@@ -267,10 +277,8 @@ if __name__ == "__main__":
 			#BATCH_X BATCH_Y: i-th batches of train_indices_x and train_y
 			batch_rnn_x, batch_y = getBatch(rnn_data_train, train_y, ibatch, batchsz)
 
-			acc,_,error = sess.run( [accuracy,optimizer,error],feed_dict={x_rnn:batch_rnn_x,
-																		y:batch_y,
-																		learning_rate:0.0002})		
-			lossi+=error
+			acc,_,err = sess.run( [accuracy,optimizer,loss],feed_dict={x_rnn:batch_rnn_x, y:batch_y, l_rate:0.0002})		
+			lossi+=err
 			accS+=acc
 
 			del batch_rnn_x
