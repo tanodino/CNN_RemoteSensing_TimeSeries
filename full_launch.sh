@@ -1,0 +1,10 @@
+sh launch_deep.sh 0 30 CNN1D
+sh launch_deep.sh 1 30 CNN1D
+sh launch_deep.sh 2 30 CNN1D
+sh launch_deep.sh 3 30 CNN1D
+sh launch_deep.sh 4 30 CNN1D
+sh launch_deep.sh 5 30 CNN1D
+sh launch_deep.sh 6 30 CNN1D
+sh launch_deep.sh 7 30 CNN1D
+sh launch_deep.sh 8 30 CNN1D
+sh launch_deep.sh 9 30 CNN1D
